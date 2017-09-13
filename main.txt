@@ -1,46 +1,80 @@
 #include <avr/io.h> 
 #include <avr/interrupt.h> 
 
-#This is a Template.
-#It enables INT0 and INT1. They both trigger on the falling edge.
-#Both are held high by internal pullup resistors and a switch is placed on each interrupt to pull it low when the switch 
-#is closed.
 
+
+/*This is a Template.
+It enables INT0 and INT1. They both trigger on the falling edge.
+Both are held high by internal pullup resistors and a switch is placed on each interrupt to pull it low when the switch 
+is closed.
+The code has been written to use functions to improve readability. The functions are at the top and they are called in int main(void)
+As written the Interrupt Service Routines toggle PORTB5 when int0 (arduino pin 2) or int1 (arduino pin 3) are shorted to ground
+Some de-bouncing on int0 and int1 is required if a manual switch is used to cleanup the signal.
+Help from here: https://rabiuls.wordpress.com/2010/07/27/external-interrupt-int0-int1-2/
+Help from here too: http://www.avrfreaks.net/forum/tut-c-bit-manipulation-aka-programming-101
+*/
+
+
+//bit operation macros - these make code more readable
+#define bit_get(p,m) ((p) & (m))
+#define bit_set(p,m) ((p) |= (m))
+#define bit_clear(p,m) ((p) &= ~(m))
+#define bit_flip(p,m) ((p) ^= (m))
+#define bit_write(c,p,m) (c ? bit_set(p,m) : bit_clear(p,m))
+#define BIT(x) (0x01 << (x))
+#define LONGBIT(x) ((unsigned long)0x00000001 << (x))
 
 ISR(INT0_vect)
 {
-	//do something
+	bit_flip(PORTB, BIT(5));	 
 }
 
 ISR(INT1_vect)
 {
-	//do something
+	bit_flip(PORTB, BIT(5));
 }
 
+	
+void InitializeInterrupts(){
+	
+	bit_set( EIMSK, BIT(INT0) ); //Enable External interrupt for INT0 (PD2)     // Enable INT0 External Interrupt
+	bit_set( EIMSK, BIT(INT1) ); //Enable External interrupt for INT1 (PD2)    // Enable INT0 External Interrupt
+}
 
-	
-	InitializeInterrupts(){
-			EIMSK |= (1<<INT0);     // Enable INT0 External Interrupt
-			EIMSK |= (1<<INT1);     // Enable INT0 External Interrupt
-	}
-	
-	SetInterruptTriggerOnFallingEdge(){
-			
-	}
-	
-	EnableInterrupts(){	
-			sei();
-	}
+void SetInterruptTriggerOnFallingEdge(){
+	bit_set( EICRA, BIT(ISC01));// interrupt on INT0 pin falling edge. p. 66
+	bit_set( EICRA, BIT(ISC11));// interrupt on INT0 pin falling edge. p. 66
+}
 
+void EnablePullupResistors(){
+	bit_set(PORTD, BIT(2)); //enable pull-up resistor on int0
+	bit_set(PORTD, BIT(3)); //enable pull-up resistor on int1
+}
+
+void EnableInterrupts(){	
+	sei();
+}
+
+void SetOutputPin(){
+	 
+	bit_set(DDRB, BIT(5));  //set PORTB5 as output
 	
-int main()
+}
+	
+int main(void)
 {
 	
 	InitializeInterrupts();
 	SetInterruptTriggerOnFallingEdge();
+	EnablePullupResistors();
 	EnableInterrupts();
 
+    //testing section
+	SetOutputPin();
+
 	
-	while(1);
+	while(1){
+		
+	}
 	return 1;
 }
