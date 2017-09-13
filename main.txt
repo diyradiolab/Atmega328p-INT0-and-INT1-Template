@@ -1,0 +1,46 @@
+#include <avr/io.h> 
+#include <avr/interrupt.h> 
+
+#This is a Template.
+#It enables INT0 and INT1. They both trigger on the falling edge.
+#Both are held high by internal pullup resistors and a switch is placed on each interrupt to pull it low when the switch 
+#is closed.
+
+
+ISR(INT0_vect)
+{
+	//do something
+}
+
+ISR(INT1_vect)
+{
+	//do something
+}
+
+
+	
+	InitializeInterrupts(){
+			EIMSK |= (1<<INT0);     // Enable INT0 External Interrupt
+			EIMSK |= (1<<INT1);     // Enable INT0 External Interrupt
+	}
+	
+	SetInterruptTriggerOnFallingEdge(){
+			
+	}
+	
+	EnableInterrupts(){	
+			sei();
+	}
+
+	
+int main()
+{
+	
+	InitializeInterrupts();
+	SetInterruptTriggerOnFallingEdge();
+	EnableInterrupts();
+
+	
+	while(1);
+	return 1;
+}
